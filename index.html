@@ -11,16 +11,53 @@
 <body class="bg-gradient-to-bl from-rose-50 to-indigo-600 h-screen flex justify-center items-center">
     <div class="bg-white shadow-lg rounded-lg p-4">
         <h1 class="font-bold text-xl mb-6 bg-gradient-to-r from-indigo-500 to-blue-500 bg-clip-text text-transparent">Seja bem-vindo(a)</h1>
-        <form class="flex flex-col w-80">
+        <form onsubmit="logar()" class="flex flex-col w-80">
             <label for="email" class="uppercase text-xs font-bold mb-2 block">Email</label>
-            <input type="email" placeholder="email@email.com" class="pl-3 h-10 border-2 border-slate-400 focus:border-indigo-600 duration-150 rounded outline-none mb-4" required />
+            <input id="email" type="email" placeholder="email@email.com" class="pl-3 h-10 border-2 border-slate-400 focus:border-indigo-600 duration-150 rounded outline-none mb-4" required />
             <label for="senha" class="uppercase text-xs font-bold mb-2 block">Senha</label>
-            <input type="password" placeholder="********" class="pl-3 h-10 border-2 border-slate-400 focus:border-indigo-600 duration-150 rounded outline-none mb-4" required />
+            <input id="senha" type="password" placeholder="********" class="pl-3 h-10 border-2 border-slate-400 focus:border-indigo-600 duration-150 rounded outline-none mb-4" required />
             <a href="/cadastrar.html" class="my-4 pl-55 ">Cadastre-se</a>
             <button type="submit" class="w-full h-10 rounded bg-indigo-400 hover:bg-indigo-600 duration-200 hover:text-white font-bold cursor-pointer">Logar</button>
 
         </form>
     </div>
+        <script>
+        
+        function logar(){
+            event.preventDefault();
+            
+            let email = document.querySelector("#email").value;
+            let senha = document.querySelector("#senha").value;
+
+            let dados = {
+                email,
+                senha
+            }
+            fetch("https://js-lista-de-tarefas-api.onrender.com/login", {
+                method: "post",
+                headers:{
+                    "Content-type": "application/json"
+                },
+                body: JSON.stringify(dados)
+            })
+            .then(resposta => resposta.json())
+            .then(json => {
+                if(json.tipo == "warning"){ 
+                alert(json.mensagem);
+                return;
+            }
+            sessionStorage.setItem("usuario", JSON.stringify(json.usuario))
+            alert(json.mensagem);
+            window.location.href = "tarefas.html";
+        })
+        .catch(error =>{
+            alert(error.mensage);
+        })
+
+        console.log("dados");
+
+        }
+    </script>
 </body>
 
 </html>

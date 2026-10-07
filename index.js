@@ -1,15 +1,32 @@
-function repetirCards(quantidade) {
-    let tarefas = document.querySelector("#tarefas");
+let tarefas = [];
 
-    for (let i = 1; i < quantidade; i++) {
-        tarefas.innerHTML += `       
-        <div id="tarefas" class="grid grid-cols-1 gap-4">
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h3 class="font-bold mb-4">Titulo do card</h3>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus temporibus neque fuga cumque nisi, magni aliquid minus. Placeat error impedit distinctio earum ipsum perspiciatis. Qui dicta a alias optio in.</p>
-            </div>
-        </div>`
+function buscarTarefas(){
+try {
+    let = usuario = JSON.parse(sessionStorage.getItem("usuario"))
+    
+    if (!usuario){
+        window.location.href = "index.html";
+    }
+    fetch("https://js-lista-de-tarefas-api.onrender.com/tarefas/${usuario.id}")
+    .then(resposta => resposta.json())
+    .then(json => {
+        if(json.tipo == "error"){ 
+            throw json.mensagem;
+        } 
+        tarefas = json;
+        carregarTarefas(tarefas);
+    })
+    }catch (error) {
+      console.log("Error: ", error.menssage);
+        
     }
 }
 
-repetirCards(10);
+buscarTarefas();
+
+function carregarTarefas(listaTarefas){
+    let grid = document.querySelector("tarefas");
+    if (listaTarefas.length == 0){
+        grid.innerHTML = "<p>Crie sua primeira tarefa</p>";
+    }
+}
