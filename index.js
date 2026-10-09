@@ -39,8 +39,8 @@ function carregarTarefas(listaTarefas){
                     <h3 class="font-bold mb-4">${tarefa.titulo}</h3>
                     <p>${tarefa.descricao}</p>
                     <div class="flex justify-end gap-3">
-                        <box-icon class="cursor-pointer hover:fill-purple-500" name="pencil"></box-icon>
-                        <box-icon onclick="deletarTarefa(${tarefa.id})" class="cursor-pointer hover:fill-purple-500" name="trash"></box-icon>
+                        <box-icon onclick="abrirFormEditar(${tarefa.id})" class="cursor-pointer hover:fill-indigo-500" name="pencil"></box-icon>
+                        <box-icon onclick="deletarTarefa(${tarefa.id})" class="cursor-pointer hover:fill-indigo-500" name="trash"></box-icon>
                     </div>
                 </div>
             `;
@@ -48,6 +48,82 @@ function carregarTarefas(listaTarefas){
     }
 }
 
+function criarTarefa(){
+    event.preventDefault();
+    try {
+        let usuario = JSON.parse(sessionStorage.getItem("usuario")) || null;
+        let titulo = document.querySelector("#titulo");
+        let descricao = document.querySelector("#descricao");
+        let dados = {
+            titulo: titulo.value,
+            descricao: descricao.value,
+            usuario_id: usuario.id
+        }
+
+        fetch("https://js-lista-de-tarefas-api.onrender.com/tarefas",{
+            method: "post",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify(dados)
+        })
+        .then(resposta => resposta.json())
+        .then(json => {
+            alert(json.mensagem);
+            fecharFormCriar();
+            buscarTarefas();
+        })
+    } catch (error) {
+        alert("Error: ", error.message);
+    }
+}
+
+function editarTarefa(){
+        event.preventDefault();
+    try {
+        let usuario = JSON.parse(sessionStorage.getItem("usuario")) || null;
+        let id = document.querySelector("#idEdicao")
+        let titulo = document.querySelector("#tituloEdicao");
+        let descricao = document.querySelector("#descricaoEdicao");
+        let dados = {
+            titulo: titulo.value,
+            descricao: descricao.value,
+            usuario_id: usuario.id
+        }
+
+        fetch(`https://js-lista-de-tarefas-api.onrender.com/tarefas/${id.value}`,{
+            method: "put",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify(dados)
+        })
+        .then(resposta => resposta.json())
+        .then(json => {
+            alert(json.mensagem);
+            fecharFormEditar();
+            buscarTarefas();
+        })
+    } catch (error) {
+        alert("Error: ", error.message);
+    }
+}
+
+function deletarTarefa(id){
+    if(confirm("Deseja realmente apagar?")){
+        fetch(`https://js-lista-de-tarefas-api.onrender.com/tarefas/${id.value}`, {
+            method: "delete",
+            headers: {
+                "Content-type": "application/json"
+            }
+        })
+        .then(resposta => resposta.json())
+        .then(json => {
+            alert(json.mensagem);
+            buscarTarefas();
+        })
+    }
+}
 
 function abrirFormCriar(){
     let overlay = document.querySelector("#overlay");
@@ -63,48 +139,36 @@ function fecharFormCriar(){
     formCriar.classList.add("opacity-0","invisible");
 }
 
-function criarTarefa(){
-    event.preventDefault();
-    try{
-        let usuario = JSON.parse(sessionStorage.getItem("usuario")) || null;
-        let titulo = document.querySelector("#titulo")
-        let descricao = document.querySelector("#descricao")
-        let dados = {
-            titulo: titulo.value,
-            descricao:  descricao.value,
-            usuario_id: usuario.id
-        }
-        fetch("https://js-lista-de-tarefas-api.onrender.com/tarefas",{
-            method: "post",
-            headers: {
-                "Content-type": "application/json"
-            },
-            body: JSON.stringify(dados)
-    
-        })
-        .then(resposta => resposta.json())
-        .then(json => {
-            alert(json.mensagem)
-            fecharFormCriar()
-            buscarTarefas()
-        })
-    }catch(error){
-        alert("Error", error.mensage);
-    }
+function abrirFormEditar(id){
+    let overlay = document.querySelector("#overlay");
+    let formEditar = document.querySelector("#form-editar");
+    let idEdicao = document.querySelector("#idEdicao");
+    let tituloEdicao = document.querySelector("#tituloEdicao");
+    let descricaoEdicao = document.querySelector("#descricaoEdicao");
+    let tarefa = tarefas.find(tarefa => tarefa.id == id);
+    idEdicao.value = tarefa.id;
+    tituloEdicao.value = tarefa.titulo;
+    descricaoEdicao.value = tarefa.descricao;
+
+    overlay.classList.remove("opacity-0","invisible");
+    formEditar.classList.remove("opacity-0","invisible");
 }
 
-function deletarTarefa(id){
-    if(confirm("Deseja realmente apagar?")){
-        fetch("https://js-lista-de-tarefas-api.onrender.com/tarefas/${id}",{
-            method: "delete",
-            headers: {
-                "Content-type": "application/json"
-            }
-        })
-        .then(resposta => resposta.json())
-        .then(json => {
-            alert(json.mensagem)
-            buscarTarefas()
-        })
+function fecharFormEditar(){
+    let overlay = document.querySelector("#overlay");
+    let formEditar = document.querySelector("#form-editar");
+    overlay.classList.add("opacity-0","invisible");
+    formEditar.classList.add("opacity-0","invisible");
+}
+
+function pesquisarTarefa(palavra){
+    if(palavra.length == 0){
+        carregarTarefas(tarefas);
+        return; 
+    }
+
+    if(palavra.length >= 3){
+        let tarefasFiltradas = tarefas.filter(tarefa => tarefa.titulo.toLowerCase().includes(palavra.toLowerCase()))
+        carregarTarefas(tarefasFiltradas);
     }
 }
